@@ -594,16 +594,16 @@ export default function Home() {
                     <option value="">
                       {t("Select a service...", "Selecciona un servicio...")}
                     </option>
-                    <option>Engine Repair</option>
-                    <option>Transmission</option>
-                    <option>Brake Service</option>
-                    <option>A/C &amp; Heating</option>
-                    <option>Electrical Systems</option>
-                    <option>Oil Change &amp; Maintenance</option>
-                    <option>Exhaust &amp; Emissions</option>
-                    <option>Suspension &amp; Steering</option>
-                    <option>Tire Services</option>
-                    <option>Other</option>
+                    <option>{t("Engine Repair", "Reparación de Motor")}</option>
+                    <option>{t("Transmission", "Transmisión")}</option>
+                    <option>{t("Brake Service", "Servicio de Frenos")}</option>
+                    <option>{t("A/C & Heating", "Aire Acondicionado y Calefacción")}</option>
+                    <option>{t("Electrical Systems", "Sistemas Eléctricos")}</option>
+                    <option>{t("Oil Change & Maintenance", "Cambio de Aceite y Mantenimiento")}</option>
+                    <option>{t("Exhaust & Emissions", "Escape y Emisiones")}</option>
+                    <option>{t("Suspension & Steering", "Suspensión y Dirección")}</option>
+                    <option>{t("Tire Services", "Servicios de Llantas")}</option>
+                    <option>{t("Other", "Otro")}</option>
                   </select>
                 </div>
                 <div className="form-group">
