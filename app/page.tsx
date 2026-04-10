@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, FormEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { sendQuoteRequest } from "./actions";
 
 export default function Home() {
   const [lang, setLang] = useState<"en" | "es">("en");
@@ -50,14 +51,27 @@ export default function Home() {
   const t = (en: string, es: string) => (lang === "en" ? en : es);
 
   // Form submit
-  const [formStatus, setFormStatus] = useState<"idle" | "sent">("idle");
-  const handleSubmit = (e: FormEvent) => {
+  const [formStatus, setFormStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [formError, setFormError] = useState("");
+  const formRef = useRef<HTMLFormElement | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormStatus("sent");
-    setTimeout(() => {
-      setFormStatus("idle");
-      (e.target as HTMLFormElement).reset();
-    }, 3000);
+    if (!formRef.current) return;
+    setFormStatus("sending");
+    setFormError("");
+
+    const result = await sendQuoteRequest(new FormData(formRef.current));
+
+    if (result.success) {
+      setFormStatus("sent");
+      formRef.current.reset();
+      setTimeout(() => setFormStatus("idle"), 4000);
+    } else {
+      setFormStatus("error");
+      setFormError(result.error);
+      setTimeout(() => setFormStatus("idle"), 4000);
+    }
   };
 
   return (
@@ -553,13 +567,14 @@ export default function Home() {
 
             <div className="contact-form fade-up">
               <h3>{t("Request a Quote", "Solicitar Cotizaci\u00f3n")}</h3>
-              <form onSubmit={handleSubmit}>
+              <form ref={formRef} onSubmit={handleSubmit}>
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="name">{t("Your Name", "Tu Nombre")}</label>
                     <input
                       type="text"
                       id="name"
+                      name="name"
                       placeholder={t("John Doe", "Juan P\u00e9rez")}
                       required
                     />
@@ -571,6 +586,7 @@ export default function Home() {
                     <input
                       type="tel"
                       id="phone"
+                      name="phone"
                       placeholder="(407) 000-0000"
                       required
                     />
@@ -583,6 +599,7 @@ export default function Home() {
                   <input
                     type="email"
                     id="email"
+                    name="email"
                     placeholder={t("you@email.com", "tu@correo.com")}
                   />
                 </div>
@@ -590,7 +607,7 @@ export default function Home() {
                   <label htmlFor="service">
                     {t("Service Needed", "Servicio Requerido")}
                   </label>
-                  <select id="service">
+                  <select id="service" name="service">
                     <option value="">
                       {t("Select a service...", "Selecciona un servicio...")}
                     </option>
@@ -612,23 +629,36 @@ export default function Home() {
                   </label>
                   <textarea
                     id="message"
+                    name="message"
                     placeholder={t(
                       "Tell us what's going on with your vehicle...",
                       "Cu\u00e9ntanos qu\u00e9 le pasa a tu veh\u00edculo..."
                     )}
                   />
                 </div>
+                {formStatus === "error" && (
+                  <p style={{ color: "#ef4444", fontSize: "0.9rem", marginBottom: 12 }}>
+                    {formError || t("Something went wrong.", "Algo salió mal.")}
+                  </p>
+                )}
                 <button
                   type="submit"
                   className="btn-submit"
+                  disabled={formStatus === "sending"}
                   style={
                     formStatus === "sent"
                       ? { background: "#22c55e" }
+                      : formStatus === "error"
+                      ? { background: "#ef4444" }
                       : undefined
                   }
                 >
-                  {formStatus === "sent"
-                    ? "Sent! We'll call you back soon."
+                  {formStatus === "sending"
+                    ? t("Sending...", "Enviando...")
+                    : formStatus === "sent"
+                    ? t("Sent! We'll call you back soon.", "¡Enviado! Te llamaremos pronto.")
+                    : formStatus === "error"
+                    ? t("Error — Try Again", "Error — Intenta de Nuevo")
                     : t("Send Request \u2192", "Enviar Solicitud \u2192")}
                 </button>
               </form>
